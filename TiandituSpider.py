@@ -21,7 +21,7 @@ class tiandituSpider(object):
             'User-Agent': UserAgent().random,
         }
 
-    def postTianditu(self, url: str, **kwargs) -> str:
+    def post_tianditu(self, url: str, **kwargs) -> str:
         return requests.post(url, headers=self.headers, **kwargs).json()
 
     def decrypt(self, code: str) -> list:
@@ -38,28 +38,28 @@ class tiandituSpider(object):
                     point[0], point[1] = point[1], point[0]
         return MultiPolygon
 
-    def queryAdminDistrict(self) -> dict:
+    def query_admin_district(self) -> dict:
         """
         Enquire name and gbcode for every district of Beijing,
         before passing gbcode to enquire geometry of each district.
         """
         url = 'https://beijing.tianditu.gov.cn/tianditu_pro/region/queryRegion'
-        response = self.postTianditu(url)
+        response = self.post_tianditu(url)
         admin_division = self.decrypt(response.get('data'))
         names, geometries = [], []
         for district in tqdm(admin_division):
             name = district.get('name')
             gbcode = district.get('gbcode')
-            geometry = self.queryGeometry(gbcode)
+            geometry = self.query_geometry(gbcode)
             names.append(name)
             geometries.append(geometry)
             time.sleep(random.uniform(1, 2))
         return {'name': names, 'geometry': geometries}
 
-    def queryGeometry(self, gbcode: int):
+    def query_geometry(self, gbcode: int):
         url = 'https://beijing.tianditu.gov.cn/tianditu_pro/region/queryRegionDetails'
         param = self.encrypt(f'{{"gbcode":"{gbcode}"}}')
-        response = self.postTianditu(url, data=param)
+        response = self.post_tianditu(url, data=param)
         geomPolygon = self.decrypt(response.get('data')).get('geomPolygon')
         geomPolygon = self.swap_xy(json.loads(geomPolygon))
         geometry = shape({'type': 'MultiPolygon',
@@ -69,7 +69,7 @@ class tiandituSpider(object):
     @classmethod
     def start(cls):
         spider = cls()
-        gdf = gpd.GeoDataFrame(spider.queryAdminDistrict(), crs='epsg:4326')
+        gdf = gpd.GeoDataFrame(spider.query_admin_district(), crs='epsg:4326')
         gdf.to_file('Data/BeijingDistricts.shp', encoding='utf-8')
 
 
