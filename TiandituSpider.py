@@ -11,7 +11,6 @@ from fake_useragent import UserAgent
 
 class tiandituSpider(object):
     def __init__(self):
-        self.user_agent = UserAgent()
         self.headers = {
             'Accept': '*/*',
             'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,en-GB;q=0.6',
@@ -19,7 +18,7 @@ class tiandituSpider(object):
             'Host': 'beijing.tianditu.gov.cn',
             'Origin': 'https://beijing.tianditu.gov.cn',
             'Referer': 'https://beijing.tianditu.gov.cn/bjtdt-main/electronicindex.html',
-            'User-Agent': self.user_agent.random,
+            'User-Agent': UserAgent().random,
         }
 
     def postTianditu(self, url: str, **kwargs) -> str:
